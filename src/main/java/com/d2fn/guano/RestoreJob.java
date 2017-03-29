@@ -16,13 +16,17 @@ public class RestoreJob implements Job, Watcher, FSVisitor {
     private String zkServer;
     private String znode;
     private String inputDir;
+    private String user;
+    private String pass;
 
     private ZooKeeper zk;
 
-    public RestoreJob(String zkServer, String znode, String inputDir) {
+    public RestoreJob(String zkServer, String znode, String inputDir, String user, String pass) {
         this.zkServer = zkServer;
         this.znode = znode;
         this.inputDir = inputDir;
+        this.user = user;
+        this.pass = pass;
     }
 
     public void go() {
@@ -33,6 +37,9 @@ public class RestoreJob implements Job, Watcher, FSVisitor {
 
         try {
             zk = new ZooKeeper(zkServer + znode, 10000, this);
+            if (user != null && pass != null) {
+                zk.addAuthInfo("digest", (user + ":" + pass).getBytes("UTF-8"));
+            }
             while(!zk.getState().isConnected()) {
                 System.out.println("connecting to " + zkServer + " with chroot " + znode);
                 Thread.sleep(1000L);

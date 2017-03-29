@@ -33,18 +33,25 @@ public class Guano implements Job {
         }
 
         String server = cmd.getOptionValue("s");
+        String user = null;
+        String pass = null;
+
+        if (cmd.hasOption("u") && cmd.hasOption("p")) {
+            user = cmd.getOptionValue("u");
+            pass = cmd.getOptionValue("p");
+        }
 
         // dump?
         if(cmd.hasOption("d") && cmd.hasOption("o")) {
             String znode = cmd.getOptionValue("d");
             String outputDir = cmd.getOptionValue("o");
-            job = new DumpJob(server, outputDir, znode);
+            job = new DumpJob(server, outputDir, znode, user, pass);
         }
         // restore
         else if(cmd.hasOption("r") && cmd.hasOption("i")) {
             String znode = cmd.getOptionValue("r");
             String inputDir = cmd.getOptionValue("i");
-            job = new RestoreJob(server, znode, inputDir);
+            job = new RestoreJob(server, znode, inputDir, user, pass);
         }
         else {
             usage(options);
@@ -84,6 +91,8 @@ public class Guano implements Job {
         options.addOption("o", "output-dir",        true,  "the output directory to which znode information should be written (must be a normal, empty directory)");
         options.addOption("i", "input-dir",         true,  "the input directory from which znode information should be read");
         options.addOption("v", "verbose",           false, "enable debug output");
+        options.addOption("u", "user",           true, "user name, optional");
+        options.addOption("p", "password",           true, "password, optional");
         return options;
     }
 }

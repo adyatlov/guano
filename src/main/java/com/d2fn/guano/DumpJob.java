@@ -1,11 +1,14 @@
 package com.d2fn.guano;
 
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -17,11 +20,15 @@ public class DumpJob implements Job, Watcher {
     private String zkServer;
     private String outputDir;
     private String znode;
+    private String user;
+    private String pass;
 
-    public DumpJob(String zkServer, String outputDir, String znode) {
+    public DumpJob(String zkServer, String outputDir, String znode, String user, String pass) {
         this.zkServer = zkServer;
         this.outputDir = outputDir;
         this.znode = znode;
+        this.user = user;
+        this.pass = pass;
     }
 
     public void go() {
@@ -30,13 +37,23 @@ public class DumpJob implements Job, Watcher {
         System.out.println("reading from zookeeper path: " + znode);
         System.out.println("dumping to local directory: " + outputDir);
 
+        ZooKeeper zk;
         try {
-            ZooKeeper zk = new ZooKeeper(zkServer + znode, 10000, this);
-            go(zk);
+            zk = new ZooKeeper(zkServer + znode, 10000, this);
         } catch (IOException e) {
             System.err.println("error connecting to " + zkServer);
             System.exit(1);
+            return;
         }
+        if (user != null && pass != null) {
+            try {
+                zk.addAuthInfo("digest", (user + ":" + pass).getBytes("UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                System.err.println("error processing credentials: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+        go(zk);
     }
 
     private void go(ZooKeeper zk) {

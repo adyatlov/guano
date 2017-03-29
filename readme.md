@@ -13,4 +13,7 @@
       -r,--restore-znode <arg>   the znode into which read data should be
                                  restored
 
+      -u, --user <arg>           user name, optional
+      -p, --password <arg>       password, optional
+
       -v,--verbose               enable debug output
